@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Toko;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class TokoController extends Controller
 {
@@ -29,7 +30,6 @@ class TokoController extends Controller
     {
         //
         return view('tambah');
-        
     }
 
     /**
@@ -45,11 +45,27 @@ class TokoController extends Controller
             'nama_toko' => 'required',
             'slug' => 'required|unique:tokos',
             'alamat' => 'required',
-            'deskripsi' => 'required'
+            'deskripsi' => 'required',
+            'gambar' => 'required|image|mimes:jpeg,png,jpg|max:2048'
         ]);
 
+        $fileName = '';
+        // Rename dan menyimpan file gambar
+        if ($request->hasFile('gambar')) {
+            $file = $request->file('gambar');
+            //rename file
+            $fileName = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+            $file->storeAs('public/img', $fileName);
+        }
 
-        Toko::create($validateData);
+
+        Toko::create([
+            'nama_toko' => $request->nama_toko,
+            'slug' => $validateData['slug'],
+            'alamat' => $validateData['alamat'],
+            'deskripsi' => $validateData['deskripsi'],
+            'gambar' => $fileName
+        ]);
 
         return redirect('/toko');
     }
@@ -66,7 +82,6 @@ class TokoController extends Controller
         return view('detail', [
             'sayang' => $toko
         ]);
-
     }
 
     /**
@@ -100,7 +115,34 @@ class TokoController extends Controller
             'deskripsi' => 'required'
         ]);
 
-        $toko->update($validateData);
+        $NamaFileLama = $toko->gambar;
+
+        $fileName = $toko->gambar;
+        // Jika ada perubahan pada gambar
+        if ($request->hasFile('gambar')) {
+            // Validasi untuk jenis file gambar
+            $request->validate([
+                'gambar' => 'image|mimes:jpeg,png,jpg|max:2048',
+            ]);
+
+            // Rename dan menyimpan file gambar
+            $file = $request->file('gambar');
+            $fileName = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+            $file->storeAs('public/img', $fileName);
+
+            //delete file gambar lama
+            Storage::delete('public/img/' . $NamaFileLama);
+        } 
+        
+        $toko->update([
+            'nama_toko' => $validateData['nama_toko'],
+            'slug' => $validateData['slug'],
+            'alamat' => $validateData['alamat'],
+            'deskripsi' => $validateData['deskripsi'],
+            'gambar' => $fileName
+        ]);
+        
+
 
         return redirect('/toko');
     }
@@ -113,6 +155,8 @@ class TokoController extends Controller
      */
     public function destroy(Toko $toko)
     {
+        //delete img
+        Storage::delete('public/img/' . $toko->gambar);
         $toko->delete();
 
         return redirect('/toko')->with('pesan', 'Data berhasil dihapus');

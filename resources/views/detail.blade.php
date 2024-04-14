@@ -13,10 +13,13 @@
             </form>
         </div>
         <div class="border mb-2">
+            <img src="/storage/img/{{$sayang->gambar }}" alt="" class="img-fluid" 
+            style="height: 300px; object-fit: cover;">
             <p>{{ $sayang->nama_toko }}</p>
             <p>{{ $sayang->slug }}</p>
             <p>{{ $sayang->deskripsi }}</p>
             <p>{{ $sayang->alamat }}</p>
+            
         </div>
         
     </div>

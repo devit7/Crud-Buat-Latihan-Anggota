@@ -19,9 +19,9 @@ class TokoFactory extends Factory
         return [
             //
             'nama_toko' => $this->faker->company,
-            'slug' => $this->faker->slug,
+            'slug' => $this->faker->slug(),
             'alamat' => $this->faker->address,
-            'deskripsi' => $this->faker->sentence,
+            'deskripsi' => $this->faker->sentence(),
         ];
     }
 }
